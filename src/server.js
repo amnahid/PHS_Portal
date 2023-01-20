@@ -1,10 +1,11 @@
 const http = require('http');
+const dotenv = require('dotenv');
 
 const app = require('./app')
 
 const server = http.createServer(app)
 
-const PORT = process.env.PARADOXICAL_HACKER_PORT || 3000
+const PORT = process.env.PARADOXICAL_HACKER_REST_PORT || 3000
 
 function startServer(){
     server.listen(PORT, () => console.log(`Server running on PORT ${PORT}`))
