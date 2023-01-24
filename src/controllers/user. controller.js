@@ -6,8 +6,8 @@ const userController = {}
 // signup new user
 userController.signup = (req, res, next) => {
     try {
-        const { name, profilePic } = req.body
-        const newUserData = { name, profilePic, rank: "MANGO" }
+        const { name, profilePic, email } = req.body
+        const newUserData = { name, profilePic,email, rank: "MANGO" }
         userLogic.signup(newUserData, res, next)
     } catch (err) {
         next(err)

@@ -7,16 +7,19 @@ const userSchema = new mongoose.Schema({
         type: String,
         require: true
     },
-    email: String,
+    email: {
+        type: String,
+        require: true
+    },
     about: String,
     notifications: [String],
     media: [{
-            reference: objectID,
-            createdAt: {
-                type: Date,
-                default: Date.now(),
-                immutable: true
-            },
+        reference: objectID,
+        createdAt: {
+            type: Date,
+            default: Date.now(),
+            immutable: true
+        },
     }],
     posts: [objectID],
     followers: [objectID],
