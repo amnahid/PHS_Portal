@@ -19,10 +19,10 @@ mongoose.connect('mongodb://127.0.0.1:27017/phs_portal')
 app.use("/api", controller) // post controllers
 
 app.use((err, req, res, next) => {
-  console.error(err.stack)
   res.status(500).json({
     data: null,
-    message: "something broke"
+    // message: "Server request failed"
+    message: err._message
   })
 })
 

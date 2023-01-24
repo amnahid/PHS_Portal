@@ -11,6 +11,9 @@ const postRouter = express.Router()
 .post('/', postController.uploadPost)
 
 //
-.patch('/', postController.updatePost)
+// .patch('/', postController.updatePost)
+
+// comment 
+.post('/:postID/comment', )
 
 module.exports = postRouter 

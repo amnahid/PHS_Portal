@@ -3,11 +3,21 @@ const mongoose = require('mongoose');
 const objectID = mongoose.Schema.ObjectId
 
 const postSchema = new mongoose.Schema({
-    author: objectID,
-    media: [String],
+    author: {
+        type: objectID,
+        require: true
+    },
+    media: [{
+        type: String,
+        require: true
+    }],
+    caption: {
+        type: String,
+        required: true
+    },
     likes: [objectID],
     comments: [{
-        author:objectID,
+        author: objectID,
         createdAt: {
             type: Date,
             default: Date.now(),
@@ -30,7 +40,10 @@ const postSchema = new mongoose.Schema({
         type: Date,
         default: Date.now()
     },
-    status: String // PUBLIC, REVIEW
+    status: {
+        type: String,
+        require: true
+    } // PUBLIC, REVIEW
 })
 
 module.exports = mongoose.model('posts', postSchema)

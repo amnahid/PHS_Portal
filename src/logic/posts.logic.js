@@ -3,7 +3,7 @@ const postsModel = require('../database/models/posts.model')
 // scaffolding
 const postLogic = {}
 
-postLogic.getTimeLinePosts = async() => {
+postLogic.getTimeLinePosts = async () => {
     try {
         const timeLinePost = await postsModel.find({})
         // console.log("coming from logic "+timeLinePost);
@@ -13,11 +13,15 @@ postLogic.getTimeLinePosts = async() => {
     }
 }
 
-postLogic.addPost = (post) => {
-    try{
-        postsModel.insertMan(post)
+postLogic.addPost = async (postData,res, next) => {
+    try {
+        const uploadedPost = await postsModel.insertMany(postData)
+        res.status(201).json({
+            data: uploadedPost,
+            message: "Post Uploaded!"
+        })
     } catch (err) {
-        throw new Error("Failed to upload the post!")
+        next(err)
     }
 }
 

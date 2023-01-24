@@ -20,11 +20,10 @@ postController.timeLinePosts = async (req, res, next) => {
 // upload a new post
 postController.uploadPost = async (req, res, next) => {
     try {
-        const uploadedPost = await postLogic.addPost(req.body)
-        res.status(201).json({
-            data: uploadedPost,
-            message: "Post Uploaded!"
-        })
+        const { author, media, caption } = req.body // filtering post data
+        const postData = { author, media, caption, status:"REVIEW" }
+        // const uploadedPost = await postLogic.addPost(postData, res, next)
+        postLogic.addPost(postData, res, next)
     } catch (err) {
         next(err)
     }
@@ -34,6 +33,11 @@ postController.uploadPost = async (req, res, next) => {
 postController.updatePost = async (req, res) => {
     const postID = req.params.postID
 
+}
+
+// comment 
+postController.comment = async (req, res) => {
+    const postID = req.params.postID
 }
 
 module.exports = postController
