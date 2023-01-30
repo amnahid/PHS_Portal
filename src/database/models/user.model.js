@@ -26,7 +26,7 @@ const userSchema = new mongoose.Schema({
     followings: [objectID],
     profilePic: String, // ADMIN, MANGO, MODERATOR,
     rank: {
-        type: String, // ADMIN, MANGO, MODERATOR
+        type: String, // ADMIN, MANGO, MODERATOR, NEW
         required: true
     },
     createdAt: {
