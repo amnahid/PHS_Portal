@@ -22,33 +22,53 @@ function otpValidator(user) {
     }
 }
 
+// find index of an OTP
+async function getIndexOfOTP (user, otp) {
+    return otpStore.findIndex(data => data.user === user && data.otp === otp)
+}
+
+// remove OTP (its need to call when a otp used)
+async function removeOTP (indexOfOTP) {
+    indexOfOTP = await indexOfOTP
+    otpStore.splice(indexOfOTP, indexOfOTP)
+    // console.log(otpStore)
+    console.log(otpStore, "otp removed");
+}
+
 // generate otp
 otpManager.generate = async user => {
     const otp = Math.floor(Math.random() * (999999 - 111111 + 1)) + 111111
     const validOTP = await otpValidator(user) // variable to set that the OTP exist or not
 
     if (validOTP.isOTPValid) { // OTP data adding on otpStore if OTP isn't exist
+        console.log(otpStore, "before otp pushed");
         otpStore.push({
             otp,
             user // must have to be email
         })
-        let indexOfOTP = await otpStore.findIndex(data => data.user === user && data.otp === otp)
+        console.log(otpStore, "otp pushed");
         // removing OTP from otpStore after a certain time
         setTimeout(() => {
-            otpStore.splice(indexOfOTP, indexOfOTP)
+            removeOTP(getIndexOfOTP(user,otp))
         }, 86400000) // 24hrs
         // sending otp to user
-        await mail(user, `Your OTP code is: ${otp}`, "PHS Portal OTP CODE")
+        mail(user, `Your OTP code is: ${otp}`, "PHS Portal OTP CODE")
         return otp
     } else { // returning otp if otp exist
         return otpStore[validOTP.indexOfOTP].otp
     }
 }
 
-// remove OTP (its need to call when a otp used)
-otpManager.removeOTP = async otp => {
-    const indexOfOTP = await otpStore.findIndex(data => data.user === user && data.otp === otp)
-    otpStore.splice(indexOfOTP, indexOfOTP)
+// validate OTP
+otpManager.verify = async (user, otp) => {
+    const indexOfOTP = await getIndexOfOTP(user,otp)
+    if (indexOfOTP !== -1) {
+        removeOTP(getIndexOfOTP(user,otp))
+        return true
+    } else {
+        return false
+    }
+
 }
 
 module.exports = otpManager 

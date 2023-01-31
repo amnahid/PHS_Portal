@@ -24,9 +24,9 @@ const userSchema = new mongoose.Schema({
     posts: [objectID],
     followers: [objectID],
     followings: [objectID],
-    profilePic: String, // ADMIN, MANGO, MODERATOR,
+    profilePic: String,
     rank: {
-        type: String, // ADMIN, MANGO, MODERATOR, NEW
+        type: String, // ADMIN, MANGO, MODERATOR, NE
         required: true
     },
     createdAt: {

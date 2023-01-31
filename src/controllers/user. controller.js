@@ -12,16 +12,32 @@ userController.signup = async (req, res, next) => {
         const existsUserEmail = await userModel.findOne({ email })
         if (existsUserName || existsUserEmail) {
             res.status(409).json({
-                    data: null,
-                    message: `User with same ${existsUserName?"name":""}${existsUserEmail&&existsUserName?" and ":""}${existsUserEmail?"email":""} exists`
+                data: null,
+                message: `User with same ${existsUserName ? "name" : ""}${existsUserEmail && existsUserName ? " and " : ""}${existsUserEmail ? "email" : ""} exists`
             })
         } else {
             const newUserData = { name, profilePic, email, rank: "NEW" }
-            userLogic.addNewUser(newUserData, res, next)
+            const signedUserData = await userLogic.addNewUser(newUserData, next)
+            res.status(201).json({
+                data: signedUserData,
+                message: "Signup successful!"
+            })
         }
     } catch (err) {
         next(err)
     }
+}
+
+// OTP verify
+userController.verifyOTP = async (req, res, next) => {
+    const token = req.headers.token.split(" ")[1]
+    const otp = req.body.otp
+    const validationData = await userLogic.validateOTP(token, otp)
+    console.log(validationData)
+    res.status(200).json({
+        data: validationData.token,
+        message:validationData.message
+    })
 }
 
 // get user profile
