@@ -17,7 +17,7 @@ userController.signup = async (req, res, next) => {
             })
         } else {
             const newUserData = { name, profilePic, email, rank: "NEW" }
-            const signedUserData = await userLogic.addNewUser(newUserData, next)
+            const signedUserData = await userLogic.addNewUser(newUserData)
             res.status(201).json({
                 data: signedUserData,
                 message: "Signup successful!"
@@ -35,7 +35,7 @@ userController.verifyOTP = async (req, res, next) => {
     const validationData = await userLogic.validateOTP(token, otp)
     console.log(validationData)
     res.status(200).json({
-        data: validationData.token,
+        data: {token:validationData.token},
         message:validationData.message
     })
 }
