@@ -17,13 +17,13 @@ mongoose.set('strictQuery', false);
 mongoose.connect('mongodb://127.0.0.1:27017/phs_portal')
   .then(() => console.log('DB Connected!'));
 
-app.use("/api", controller) // post controllers
+app.use("/api", controller) // api 
 
 app.use((err, req, res, next) => {
   res.status(500).json({
     data: null,
     // message: "Server request failed"
-    message: err._message
+    message: err.message
   })
 })
 

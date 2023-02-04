@@ -61,7 +61,7 @@ otpManager.generate = async user => {
 
 // validate OTP
 otpManager.verify = async (user, otp) => {
-    const indexOfOTP = await getIndexOfOTP(user,otp)
+    const indexOfOTP = await getIndexOfOTP(user, otp)
     if (indexOfOTP !== -1) {
         removeOTP(getIndexOfOTP(user,otp))
         return true
