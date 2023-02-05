@@ -1,6 +1,7 @@
 const jwt = require('jsonwebtoken');
 
-const userModel = require("../database/models/user.model")
+const userModel = require("../database/models/user.model");
+const firebaseManager = require('../utils/firebase.util');
 const otpManager = require("../utils/otp.util")
 
 // scaffolding
@@ -12,8 +13,10 @@ userLogic.addNewUser = async (userData) => {
     const signUppedUser = { ...signedUser[0]._doc }
     // getting otp
     otpManager.generate(signUppedUser.email)
-    // generating jwt token
-    signUppedUser.token = jwt.sign({ user: signUppedUser._id, rank: signUppedUser.rank, email: signUppedUser.email }, process.env.PHS_JWT_SIGN_UP_SECRET_KEY, { expiresIn: "1 days" })
+    // generating jwt bearer token
+    signUppedUser.bearerToken = jwt.sign({ user: signUppedUser._id, rank: signUppedUser.rank, email: signUppedUser.email }, process.env.PHS_JWT_SIGN_UP_SECRET_KEY, { expiresIn: "1 days" })
+    // generating firebase custom token
+    loggedInUserData.firebaseToken = await firebaseManager.createCustomToken(signUppedUser.user)
     // sending response
     return signUppedUser
 }
@@ -24,18 +27,20 @@ userLogic.logUser = async (user) => {
     const loggedInUserData = { ...user }
     // getting otp
     otpManager.generate(loggedInUserData.email)
-    // generating jwt token
-    loggedInUserData.token = jwt.sign({ user: loggedInUserData._id, rank: loggedInUserData.rank, email: loggedInUserData.email }, process.env.PHS_JWT_USER_LOGGING_SECRET_KEY, { expiresIn: "1 days" })
+    // generating jwt bearer token
+    loggedInUserData.bearerToken = jwt.sign({ user: loggedInUserData._id, rank: loggedInUserData.rank, email: loggedInUserData.email }, process.env.PHS_JWT_USER_LOGGING_SECRET_KEY, { expiresIn: "1 days" })
+    // generating firebase custom token
+    loggedInUserData.firebaseToken = await firebaseManager.createCustomToken(loggedInUserData.email)
     // sending response
     return loggedInUserData
 }
 
 // verifying OTP
-userLogic.validateOTP = async (token, otp) => {
+userLogic.validateOTP = async (tokens, otp) => {
     const validationData = {}
-    const decodedToken = jwt.verify(token, process.env.PHS_JWT_SIGN_UP_SECRET_KEY, (err, payload) => {
+    const decodedToken = jwt.verify(tokens.bearerToken, process.env.PHS_JWT_SIGN_UP_SECRET_KEY, (err, payload) => {
         if (err) {
-            return jwt.verify(token, process.env.PHS_JWT_USER_LOGGING_SECRET_KEY)
+            return jwt.verify(tokens.bearerToken, process.env.PHS_JWT_USER_LOGGING_SECRET_KEY)
         } else {
             if (payload.rank === "NEW") userModel.findByIdAndUpdate(payload.user, { rank: "MANGO" })
             return payload
@@ -43,9 +48,12 @@ userLogic.validateOTP = async (token, otp) => {
     })
     console.log(decodedToken, otp)
     const validOTP = await otpManager.verify(decodedToken.email, otp)
-    validationData.message = validOTP ? "Verification successful!" : "Verification failed!"
-    validationData.token = validOTP ? jwt.sign({ user: decodedToken.user }, process.env.PHS_JWT_SIGN_IN_SECRET_KEY, { expiresIn: "1 days" }) : null
-    return validationData
+    // validationData.firebaseToken = validOTP? await firebaseManager.createCustomToken(decodedToken.user) : null //firebase token generation
+    // validationData.bearerToken = validOTP ? jwt.sign({ user: decodedToken.user }, process.env.PHS_JWT_SIGN_IN_SECRET_KEY, { expiresIn: "1 days" }) : null
+    validationData.firebaseToken = validOTP ? await firebaseManager.signInWithCustomToken(tokens.firebaseToken) : null //firebase token generation
+    validationData.bearerToken = validationData.firebaseToken ? jwt.sign({ user: decodedToken.user }, process.env.PHS_JWT_SIGN_IN_SECRET_KEY, { expiresIn: "1 days" }) : null
+    const message = (validationData.bearerToken && validationData.firebaseToken) ? "Verification successful!" : "Verification failed!"
+    return { data: validationData, message }
 }
 
 // get user profile 

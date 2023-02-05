@@ -8,6 +8,8 @@ const controller = require('./routes/routes');
 
 const app = express()
 
+// firebase init
+// app.use(admin.initializeApp)
 // parse application/x-www-form-urlencoded
 app.use(bodyParser.urlencoded({ extended: false }))
 // parse application/json
@@ -20,6 +22,7 @@ mongoose.connect('mongodb://127.0.0.1:27017/phs_portal')
 app.use("/api", controller) // api 
 
 app.use((err, req, res, next) => {
+  console.log(err)
   res.status(500).json({
     data: null,
     // message: "Server request failed"

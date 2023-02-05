@@ -1,5 +1,6 @@
 const userModel = require("../database/models/user.model")
 const userLogic = require("../logic/user.logic")
+const firebaseDatabase = require("../database/firebase.database")
 
 //scaffolding
 const userController = {}
@@ -31,12 +32,12 @@ userController.signup = async (req, res, next) => {
 // OTP verify
 userController.verifyOTP = async (req, res, next) => {
     try {
-        const token = req.headers.token.split(" ")[1]
+        const tokens = {bearerToken: req.headers.bearertoken.split(" ")[1], firebaseToken: req.headers.firebasetoken}
         const otp = req.body.otp
-        const validationData = await userLogic.validateOTP(token, otp)
+        const validationData = await userLogic.validateOTP(tokens, otp)
         console.log(validationData)
         res.status(200).json({
-            data: { token: validationData.token },
+            data: validationData.data,
             message: validationData.message
         })
     } catch (err) {
@@ -46,12 +47,13 @@ userController.verifyOTP = async (req, res, next) => {
 }
 
 // login
-userController.login = async (req, res) => {
+userController.login = async (req, res, next) => {
     try {
         const { email } = req.body
-        const existsUserEmail = await userModel.findOne({ email })._doc
-        if (existsUserEmail) {
-            const signedUserData = await userLogic.logUser(existsUserEmail)
+        const findUser = await userModel.findOne({ email })
+        const existsUser = {...findUser._doc}
+        if (existsUser) {
+            const signedUserData = await userLogic.logUser(existsUser)
             res.status(201).json({
                 data: signedUserData,
                 message: "Login successful!"
@@ -72,6 +74,12 @@ userController.userProfile = async (req, res) => {
     const userID = req.params.id
     const userData = await userLogic.getUserProfile(userID)
     res.status(200).json(userData)
+}
+
+// firebase test
+userController.firebaseTest = async (req, res) => {
+    const token = req.headers.token.split(" ")[1]
+    firebaseDatabase.signInWithCustomToken(token)
 }
 
 module.exports = userController

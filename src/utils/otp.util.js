@@ -4,7 +4,7 @@ const mail = require("./mail.util")
 const otpManager = {}
 
 // otp store
-const otpStore = [] // Sample OTP data: {"otp": 458973,"user": "User Name"}
+const otpStore = [{"otp": 458973,"user": "nahidshikder60@gmail.com"}] // Sample OTP data: {"otp": 458973,"user": "User Email"}
 
 //  otp validator
 function otpValidator(user) {

@@ -1,10 +1,10 @@
 const userModel = require("../database/models/user.model");
 
 // scaffolding
-const auth = {}
+const authUtil = {}
 
 // verify logged in user
-auth.verifyJWT = (req, res, next) => {
+authUtil.verifyJWT = (req, res, next) => {
     const authHeader = req.headers.token;
     if (!authHeader) {
         return res.status(401).send('unauthorized access');
@@ -23,7 +23,7 @@ auth.verifyJWT = (req, res, next) => {
 }
 
 // verify admin or not
-auth.verifyRank = async (req, res, next) => {
+authUtil.verifyRank = async (req, res, next) => {
     const { user } = req.decodedJWT
     const userData = await userModel.findById(user)._doc
     if (userData.rank === "ADMIN" || userData.rank === "MODERATOR") {
@@ -37,4 +37,4 @@ auth.verifyRank = async (req, res, next) => {
     }
 }
 
-module.exports = auth
+module.exports = authUtil
