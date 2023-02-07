@@ -11,7 +11,8 @@ const firebaseDatabase = {}
 // database initializers
 firebaseDatabase.init = initializeApp(firebaseConfig);
 firebaseDatabase.admin = admin.initializeApp({
-  credential: admin.credential.cert(serviceAccount)
+  credential: admin.credential.cert(serviceAccount),
+  ...firebaseConfig,
 })
 
 module.exports = firebaseDatabase

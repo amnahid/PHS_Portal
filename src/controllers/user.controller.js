@@ -8,20 +8,28 @@ const userController = {}
 // signup new user
 userController.signup = async (req, res, next) => {
     try {
-        const { name, profilePic, email } = req.body
-        const existsUserName = await userModel.findOne({ name })
-        const existsUserEmail = await userModel.findOne({ email })
-        if (existsUserName || existsUserEmail) {
+        const { name, email } = req.body
+        const { profilePic } = req.files
+        if (name && email) {
+            const existsUserName = await userModel.findOne({ name })
+            const existsUserEmail = await userModel.findOne({ email })
+            if (existsUserName || existsUserEmail) {
+                res.status(409).json({
+                    data: null,
+                    message: `User with same ${existsUserName ? "name" : ""}${existsUserEmail && existsUserName ? " and " : ""}${existsUserEmail ? "email" : ""} exists`
+                })
+            } else {
+                const newUserData = { name, email, rank: "NEW" }
+                const signedUserData = await userLogic.addNewUser(newUserData, profilePic[0])
+                res.status(201).json({
+                    data: signedUserData,
+                    message: "Signup successful!"
+                })
+            }
+        } else {
             res.status(409).json({
                 data: null,
-                message: `User with same ${existsUserName ? "name" : ""}${existsUserEmail && existsUserName ? " and " : ""}${existsUserEmail ? "email" : ""} exists`
-            })
-        } else {
-            const newUserData = { name, profilePic, email, rank: "NEW" }
-            const signedUserData = await userLogic.addNewUser(newUserData)
-            res.status(201).json({
-                data: signedUserData,
-                message: "Signup successful!"
+                message: `${name ? "" : "name"}${!name && !email ? " and " : ""}${email ? "" : "email"} required`
             })
         }
     } catch (err) {
@@ -32,7 +40,7 @@ userController.signup = async (req, res, next) => {
 // OTP verify
 userController.verifyOTP = async (req, res, next) => {
     try {
-        const tokens = {bearerToken: req.headers.bearertoken.split(" ")[1], firebaseToken: req.headers.firebasetoken}
+        const tokens = { bearerToken: req.headers.bearertoken.split(" ")[1], firebaseToken: req.headers.firebasetoken }
         const otp = req.body.otp
         const validationData = await userLogic.validateOTP(tokens, otp)
         console.log(validationData)
@@ -51,7 +59,7 @@ userController.login = async (req, res, next) => {
     try {
         const { email } = req.body
         const findUser = await userModel.findOne({ email })
-        const existsUser = {...findUser._doc}
+        const existsUser = { ...findUser._doc }
         if (existsUser) {
             const signedUserData = await userLogic.logUser(existsUser)
             res.status(201).json({

@@ -8,15 +8,17 @@ const otpManager = require("../utils/otp.util")
 const userLogic = {}
 
 // registering new user
-userLogic.addNewUser = async (userData) => {
-    const signedUser = await userModel.insertMany(userData)
+userLogic.addNewUser = async (userData, profilePic) => {
+    const profilePicName = `${Date.now()}.jpg`
+    const signedUser = await userModel.insertMany({profilePic: profilePicName, ...userData})
     const signUppedUser = { ...signedUser[0]._doc }
+    firebaseManager.storeMedia(profilePic.data, `${signUppedUser._id}/${profilePicName}`) // second parameter is the path of the profile pic on firebase storage
     // getting otp
     otpManager.generate(signUppedUser.email)
     // generating jwt bearer token
     signUppedUser.bearerToken = jwt.sign({ user: signUppedUser._id, rank: signUppedUser.rank, email: signUppedUser.email }, process.env.PHS_JWT_SIGN_UP_SECRET_KEY, { expiresIn: "1 days" })
     // generating firebase custom token
-    loggedInUserData.firebaseToken = await firebaseManager.createCustomToken(signUppedUser.user)
+    // loggedInUserData.firebaseToken = await firebaseManager.createCustomToken(signUppedUser.user)
     // sending response
     return signUppedUser
 }
@@ -58,7 +60,11 @@ userLogic.validateOTP = async (tokens, otp) => {
 
 // get user profile 
 userLogic.getUserProfile = async (userID) => {
-    return userModel.findById(userID)
+    const foundUserOnDatabase = await userModel.findById(userID)
+    const userDataOnDatabase = {...foundUserOnDatabase._doc}
+    userDataOnDatabase.profilePic = await firebaseManager.fetchMedia(`${userDataOnDatabase._id}/${userDataOnDatabase.profilePic}`)
+    // fetching user profile
+    return userDataOnDatabase
 }
 
 module.exports = userLogic
