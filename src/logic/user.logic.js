@@ -17,8 +17,6 @@ userLogic.addNewUser = async (userData, profilePic) => {
     otpManager.generate(signUppedUser.email)
     // generating jwt bearer token
     signUppedUser.bearerToken = jwt.sign({ user: signUppedUser._id, rank: signUppedUser.rank, email: signUppedUser.email }, process.env.PHS_JWT_SIGN_UP_SECRET_KEY, { expiresIn: "1 days" })
-    // generating firebase custom token
-    // loggedInUserData.firebaseToken = await firebaseManager.createCustomToken(signUppedUser.user)
     // sending response
     return signUppedUser
 }
@@ -31,8 +29,6 @@ userLogic.logUser = async (user) => {
     otpManager.generate(loggedInUserData.email)
     // generating jwt bearer token
     loggedInUserData.bearerToken = jwt.sign({ user: loggedInUserData._id, rank: loggedInUserData.rank, email: loggedInUserData.email }, process.env.PHS_JWT_USER_LOGGING_SECRET_KEY, { expiresIn: "1 days" })
-    // generating firebase custom token
-    loggedInUserData.firebaseToken = await firebaseManager.createCustomToken(loggedInUserData.email)
     // sending response
     return loggedInUserData
 }
@@ -50,11 +46,8 @@ userLogic.validateOTP = async (tokens, otp) => {
     })
     console.log(decodedToken, otp)
     const validOTP = await otpManager.verify(decodedToken.email, otp)
-    // validationData.firebaseToken = validOTP? await firebaseManager.createCustomToken(decodedToken.user) : null //firebase token generation
-    // validationData.bearerToken = validOTP ? jwt.sign({ user: decodedToken.user }, process.env.PHS_JWT_SIGN_IN_SECRET_KEY, { expiresIn: "1 days" }) : null
-    validationData.firebaseToken = validOTP ? await firebaseManager.signInWithCustomToken(tokens.firebaseToken) : null //firebase token generation
-    validationData.bearerToken = validationData.firebaseToken ? jwt.sign({ user: decodedToken.user }, process.env.PHS_JWT_SIGN_IN_SECRET_KEY, { expiresIn: "1 days" }) : null
-    const message = (validationData.bearerToken && validationData.firebaseToken) ? "Verification successful!" : "Verification failed!"
+    validationData.bearerToken = validOTP ? jwt.sign({ user: decodedToken.user }, process.env.PHS_JWT_SIGN_IN_SECRET_KEY, { expiresIn: "1 days" }) : null
+    const message = (validationData.bearerToken ) ? "Verification successful!" : "Verification failed!"
     return { data: validationData, message }
 }
 

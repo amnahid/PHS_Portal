@@ -40,7 +40,7 @@ userController.signup = async (req, res, next) => {
 // OTP verify
 userController.verifyOTP = async (req, res, next) => {
     try {
-        const tokens = { bearerToken: req.headers.bearertoken.split(" ")[1], firebaseToken: req.headers.firebasetoken }
+        const tokens = { bearerToken: req.headers.bearertoken.split(" ")[1] }
         const otp = req.body.otp
         const validationData = await userLogic.validateOTP(tokens, otp)
         console.log(validationData)

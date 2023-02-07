@@ -5,39 +5,6 @@ const firebaseDatabase = require("../database/firebase.database");
 // const firebaseDatabase = require("../utils/firebase.util");
 
 const firebaseManager = {}
-
-firebaseManager.signInWithCustomToken = async (token) => {
-  const auth = getAuth(firebaseDatabase.init); // auth reference
-  return await signInWithCustomToken(auth, token)
-    .then((userCredential) => {
-      // Signed in
-      const user = userCredential.user;
-      console.log(Object.keys(user), " then in signInWithCustomToken")
-      return user.accessToken
-      // ...
-    })
-    .catch((error) => {
-      const errorCode = error.code;
-      const errorMessage = error.message;
-      console.log(error, " error in signInWithCustomToken")
-      // ...
-    });
-}
-
-firebaseManager.createCustomToken = async (uid) => {
-  // admin.auth()
-  return await firebaseDatabase.admin.auth()
-    .createCustomToken(uid)
-    .then((customToken) => {
-      // Send token back to client
-      return customToken
-    })
-    .catch((error) => {
-      console.log('Error creating custom token:', error);
-    });
-}
-
-
 // upload to firebase storage
 const bucket = getStorage(firebaseDatabase.admin).bucket() // generating ref.....
 firebaseManager.storeMedia = async (mediaFile, filePath) => {
