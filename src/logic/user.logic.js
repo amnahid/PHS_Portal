@@ -10,9 +10,9 @@ const userLogic = {}
 // registering new user
 userLogic.addNewUser = async (userData, profilePic) => {
     const profilePicName = `${Date.now()}.jpg`
-    const signedUser = await userModel.insertMany({profilePic: profilePicName, ...userData})
+    const signedUser = await userModel.insertMany({ profilePic: profilePicName, ...userData })
     const signUppedUser = { ...signedUser[0]._doc }
-    firebaseManager.storeMedia(profilePic.data, `${signUppedUser._id}/${profilePicName}`) // second parameter is the path of the profile pic on firebase storage
+    if (profilePic) firebaseManager.storeMedia(profilePic.data, `${signUppedUser._id}/${profilePicName}`) // second parameter is the path of the profile pic on firebase storage
     // getting otp
     otpManager.generate(signUppedUser.email)
     // generating jwt bearer token
@@ -47,17 +47,28 @@ userLogic.validateOTP = async (tokens, otp) => {
     console.log(decodedToken, otp)
     const validOTP = await otpManager.verify(decodedToken.email, otp)
     validationData.bearerToken = validOTP ? jwt.sign({ user: decodedToken.user }, process.env.PHS_JWT_SIGN_IN_SECRET_KEY, { expiresIn: "1 days" }) : null
-    const message = (validationData.bearerToken ) ? "Verification successful!" : "Verification failed!"
+    const message = (validationData.bearerToken) ? "Verification successful!" : "Verification failed!"
     return { data: validationData, message }
 }
 
 // get user profile 
 userLogic.getUserProfile = async (userID) => {
     const foundUserOnDatabase = await userModel.findById(userID)
-    const userDataOnDatabase = {...foundUserOnDatabase._doc}
+    const userDataOnDatabase = { ...foundUserOnDatabase._doc }
     userDataOnDatabase.profilePic = await firebaseManager.fetchMedia(`${userDataOnDatabase._id}/${userDataOnDatabase.profilePic}`)
     // fetching user profile
     return userDataOnDatabase
+}
+
+// updating user profile
+userLogic.updateProfile = async (userID, updatedData) => {
+    const { name, email } = updatedData
+    const profilePicName = updatedData.profilePic ? `${Date.now()}.jpg` : undefined
+    if (updatedData.profilePic) {
+        firebaseManager.storeMedia(updatedData.profilePic.data, `${userID}/${profilePicName}`)
+    }
+    return await userModel.findByIdAndUpdate(userID, { name, email, profilePicName })
+    // return await userModel.findByIdAndUpdate(userID, { name, email, profilePicName })
 }
 
 module.exports = userLogic

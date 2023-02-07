@@ -1,4 +1,3 @@
-const { getAuth, signInWithCustomToken } = require("firebase/auth");
 const { getStorage } = require('firebase-admin/storage');
 
 const firebaseDatabase = require("../database/firebase.database");
